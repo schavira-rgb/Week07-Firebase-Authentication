@@ -42,51 +42,51 @@ export default function Header({ initialUser }) { // Export the Header function
   }; // End of the handleSignIn function
 
   return ( // Return the header
-    <header> // End of the handleSignOut function
-      <Link href="/" className="logo"> // End of the handleSignOut function
-        <img src="/friendly-eats.svg" alt="FriendlyEats" /> // End of the handleSignOut function
+    <header> 
+      <Link href="/" className="logo"> 
+        <img src="/friendly-eats.svg" alt="FriendlyEats" />
         Friendly Eats
-      </Link> // End of the handleSignOut function
+      </Link> 
       {user ? ( // If the user is authenticated
-        <> // End of the handleSignOut function
-          <div className="profile"> // End of the handleSignOut function
-            <p> // End of the handleSignOut function
+        <> 
+          <div className="profile"> 
+            <p> 
               <img
                 className="profileImage"
                 src={user.photoURL || "/profile.svg"}
                 alt={user.email}
-              /> // End of the handleSignOut function
+              /> 
               {user.displayName}
-            </p> // End of the handleSignOut function
+            </p> 
 
-            <div className="menu"> // End of the handleSignOut function
-              ... // End of the handleSignOut function
-              <ul> // End of the handleSignOut function
-                <li>{user.displayName}</li> // End of the handleSignOut function
+            <div className="menu"> 
+              ... 
+              <ul> 
+                <li>{user.displayName}</li> 
 
-                <li> // End of the handleSignOut function
-                  <a href="#" onClick={addFakeRestaurantsAndReviews}> // Add sample restaurants
-                    Add sample restaurants // End of the handleSignOut function
-                  </a> // End of the handleSignOut function
-                </li> // End of the handleSignOut function
+                <li> 
+                  <a href="#" onClick={addFakeRestaurantsAndReviews}> 
+                    Add sample restaurants 
+                  </a> 
+                </li> 
 
-                <li> // End of the handleSignOut function
-                  <a href="#" onClick={handleSignOut}> // Sign out the user
-                    Sign Out // End of the handleSignOut function
-                  </a> // End of the handleSignOut function
-                </li> // End of the handleSignOut function
-              </ul> // End of the handleSignOut function
-            </div> // End of the handleSignOut function
-          </div> // End of the handleSignOut function
+                <li> 
+                  <a href="#" onClick={handleSignOut}> 
+                    Sign Out 
+                  </a> 
+                </li> 
+              </ul> 
+            </div> 
+          </div> 
         </> // End of the handleSignOut function
       ) : ( //  If the user is not authenticated
-        <div className="profile"> // End of the handleSignIn function
-          <a href="#" onClick={handleSignIn}> // Sign in with the GoogleAuthProvider object
-            <img src="/profile.svg" alt="A placeholder user image" /> // End of the handleSignIn function
-            Sign In with Google // End of the handleSignIn function
-          </a> // End of the handleSignIn function
+        <div className="profile"> 
+          <a href="#" onClick={handleSignIn}> 
+            <img src="/profile.svg" alt="A placeholder user image" /> 
+            Sign In with Google 
+          </a> 
         </div> // End of the handleSignIn function
-      )} // End of the handleSignIn function
+      )} 
     </header> // End of the header
   ); // End of the header
 } // End of the Header function
