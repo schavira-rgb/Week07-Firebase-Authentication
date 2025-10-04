@@ -1,30 +1,35 @@
-// enforces that this code can only be called on the server
+// Enforce that this code can only run the server, not the client
 // https://nextjs.org/docs/app/building-your-application/rendering/composition-patterns#keeping-server-only-code-out-of-the-client-environment
-import "server-only"; // Import the server-only module
+import "server-only";
 
-import { cookies } from "next/headers"; // Import the cookies function
-import { initializeServerApp, initializeApp } from "firebase/app"; // Import the initializeServerApp and initializeApp functions
+// Import Next.js cookies function for reading cookies requests
+import { cookies } from "next/headers"; 
+// Import firebase app functions
+import { initializeServerApp, initializeApp } from "firebase/app";
 
-import { getAuth } from "firebase/auth"; // Import the getAuth function
+// Import Firebase authentication function
+import { getAuth } from "firebase/auth";
 
-// Returns an authenticated client SDK instance for use in Server Side Rendering
-// and Static Site Generation
-export async function getAuthenticatedAppForUser() { // Export the getAuthenticatedAppForUser function
-  const authIdToken = (await cookies()).get("__session")?.value; // End of the cookies function
+// Create authenticated Firebase app instance for server-side rendering
+export async function getAuthenticatedAppForUser() {
+  // Get the session cookie containing the user's authentication token
+  const authIdToken = (await cookies()).get("__session")?.value;
 
-  // Firebase Server App is a new feature in the JS SDK that allows you to
-  // instantiate the SDK with credentials retrieved from the client & has
-  // other affordances for use in server environments.
-  const firebaseServerApp = initializeServerApp( // End of the initializeServerApp function
-    // https://github.com/firebase/firebase-js-sdk/issues/8863#issuecomment-2751401913
-    initializeApp(), // End of the initializeApp function
-    { // End of the initializeServerApp function
-      authIdToken, // End of the authIdToken function
-    } // End of the initializeServerApp function  
-  ); // End of the initializeServerApp function
+  // Initialize Firebase Server App with authentication credentials
+  // This allows using Firebase SDK on the server with user context
+  // https://github.com/firebase/firebase-js-sdk/issues/8863#issuecomment-2751401913
+  const firebaseServerApp = initializeServerApp(
+    initializeApp(),                                 // Initialize baseFirebase app
+    { 
+      authIdToken,                                  // Pass user's authentication token
+    }  
+  );
 
-  const auth = getAuth(firebaseServerApp); // End of the getAuth function
-  await auth.authStateReady(); // End of the authStateReady function
+  // Get Auth instance from the intialized server app
+  const auth = getAuth(firebaseServerApp);
+  // Wait for auth state to be ready before proceeding
+  await auth.authStateReady();
 
-  return { firebaseServerApp, currentUser: auth.currentUser }; // End of the getAuthenticatedAppForUser function
-} // End of the getAuthenticatedAppForUser function
+  // Return both the Firebase app instance and the current user
+  return { firebaseServerApp, currentUser: auth.currentUser };
+}

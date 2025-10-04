@@ -1,41 +1,47 @@
-import { // Import the Firebase Auth library
-  GoogleAuthProvider, // Import the GoogleAuthProvider class
-  signInWithPopup, // Import the signInWithPopup function
-  onAuthStateChanged as _onAuthStateChanged, // Import the onAuthStateChanged function
-  onIdTokenChanged as _onIdTokenChanged, // Import the onIdTokenChanged function
-} from "firebase/auth"; // Import the Firebase Auth library
+// Import authentication functions from Firebase Auth
+import {
+  GoogleAuthProvider,                          // Provider for Google Sign-In
+  signInWithPopup,                             // Function to show the Google Sign-In popup
+  onAuthStateChanged as _onAuthStateChanged,   // Listener for auth state changes
+  onIdTokenChanged as _onIdTokenChanged,       // Listener for id token changes
+} from "firebase/auth"; 
 
-import { auth } from "@/src/lib/firebase/clientApp"; // Import the auth object
+// Import the Firebase Auth instance for this app
+import { auth } from "@/src/lib/firebase/clientApp"; 
 
-// The onAuthStateChanged function is used to listen for changes in the user's authentication state.
-// It returns a function that can be used to unsubscribe from the listener.
-// The cb function is called with the user object when the user's authentication state changes.
-// The user object is null if the user is not authenticated.
-// The user object is not null if the user is authenticated.
-// The user object is not null if the user is authenticated.
+// Set up listener for authentication state changes (login/logout)
+export function onAuthStateChanged(cb) {
+  // Call Firebase's onAuthStateChanged with our auth instance and callback
+  return _onAuthStateChanged(auth, cb);
+} 
 
-export function onAuthStateChanged(cb) { // Export the onAuthStateChanged function
-  return _onAuthStateChanged(auth, cb); // Return the onAuthStateChanged function
-} // End of the onAuthStateChanged function
+// Set up listener for ID token changes (token refresh)
+export function onIdTokenChanged(cb) {
+  // Call Firebase's onIdTokenChanged with our auth instance and callback
+  return _onIdTokenChanged(auth, cb);
+}
 
-export function onIdTokenChanged(cb) { // Export the onIdTokenChanged function
-  return _onIdTokenChanged(auth, cb); // Return the onIdTokenChanged function
-} // End of the onI dTokenChanged function
-
-export async function signInWithGoogle() { // Export the signInWithGoogle function
-  const provider = new GoogleAuthProvider(); // Create a new GoogleAuthProvider object
+// Sign in user using Google account popup
+export async function signInWithGoogle() { 
+  // Create a Google authentication provider
+  const provider = new GoogleAuthProvider();
 
   try {
-    await signInWithPopup(auth, provider); // Sign in with the GoogleAuthProvider object
-  } catch (error) { // Catch the error
-    console.error("Error signing in with Google", error); // Log the error
-  } // End of the try block
-} // End of the signInWithGoogle function
+    // Open popup for Google sign-in
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    // Log any errors during sign-in process
+    console.error("Error signing in with Google", error);
+  }
+}
 
-export async function signOut() { // Export the signOut function
-  try { // Try to sign out the user
-    return auth.signOut(); // Sign out the user
-  } catch (error) { // Catch the error
-    console.error("Error signing out with Google", error); // Log the error
-  } // End of the try block
-} // End of the signOut function
+// Sign out the currently authenticated user
+export async function signOut() {
+  try {
+    // Call Firebase's signOut method to sign out the user
+    return auth.signOut();
+  } catch (error) { 
+    // Log any errors during sign-out process
+    console.error("Error signing out with Google", error);
+  }
+} 

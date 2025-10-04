@@ -1,75 +1,107 @@
-"use client"; // Use the client
-import React, { useEffect } from "react"; // Import the React and useEffect functions
-import Link from "next/link"; // Import the Link function
+// Mark this as a client component (runs in browser, not server)
+"use client";
+
+// Import React and useEffect hook for side effects
+import React, { useEffect } from "react";
+// Import Next.js Link component for client-side navigation
+import Link from "next/link";
+// Import authentication functions
 import {
-  signInWithGoogle, // Import the signInWithGoogle function
-  signOut, // Import the signOut function
-  onIdTokenChanged, // Import the onIdTokenChanged function
-} from "@/src/lib/firebase/auth.js"; // Import the signInWithGoogle, signOut, and onIdTokenChanged functions
-import { addFakeRestaurantsAndReviews } from "@/src/lib/firebase/firestore.js"; // Import the addFakeRestaurantsAndReviews function
-import { setCookie, deleteCookie } from "cookies-next"; // Import the setCookie and deleteCookie functions
+  signInWithGoogle,   // Function to sign in with Google
+  signOut,            // Function to sign out
+  onIdTokenChanged,  // Listener for id token changes
+} from "@/src/lib/firebase/auth.js";
+// Import function to add sample restaurant
+import { addFakeRestaurantsAndReviews } from "@/src/lib/firebase/firestore.js";
+// Import cookies management functions
+import { setCookie, deleteCookie } from "cookies-next";
 
-function useUserSession(initialUser) { // Export the useUserSession function
-  useEffect(() => { // Use the useEffect hook
-    return onIdTokenChanged(async (user) => { // Return the onIdTokenChanged function
-      if (user) { // If the user is authenticated
-        const idToken = await user.getIdToken(); // Get the ID token
-        await setCookie("__session", idToken); // Set the cookie
-      } else { // If the user is not authenticated
-        await deleteCookie("__session"); // Delete the cookie
-      } // End of the if statement
-      if (initialUser?.uid === user?.uid) { // If the user is the same
-        return; // Return if the user is the same
-      } // End of the if statement
-      window.location.reload(); // Reload the page
-    }); // End of the onIdTokenChanged function
-  }, [initialUser]); // Use the useEffect hook
+// Custom hook to manage user session and sync auth state with cookies
+function useUserSession(initialUser) {
+  // Set up effect that runs when component mounts
+  useEffect(() => {
+    // Listens for changes to user's ID token
+    return onIdTokenChanged(async (user) => {
+      if (user) {
+        // User is signed in, get their ID token
+        const idToken = await user.getIdToken();
+        // Store token in cookie for server-side access
+        await setCookie("__session", idToken);
+      } else {
+        // User is signed out, delete the cookie
+        await deleteCookie("__session");
+      }
+      // Check if user changed (prevents unnecessary reload)
+      if (initialUser?.uid === user?.uid) {
+        return;
+      }
+      // Reload page to update server-rendered content with new auth state
+      window.location.reload();
+    });
+  }, [initialUser]); // Re-run effect if initialUser changes
 
-  return initialUser; // Return the initialUser
-} // End of the useUserSession function
+  // Return the current user
+  return initialUser;
+}
 
-export default function Header({ initialUser }) { // Export the Header function
-  const user = useUserSession(initialUser); // Use the useUserSession function
+// Header component displaying app name and user profile
+export default function Header({ initialUser }) { 
+  // Current user using our custom hook
+  const user = useUserSession(initialUser);
 
-  const handleSignOut = (event) => { // Export the handleSignOut function
-    event.preventDefault(); // Prevent the default event
-    signOut(); // Sign out the user
-  }; // End of the handleSignOut function
+  // Handle sign-out button click
+  const handleSignOut = (event) => {
+    // Prevent default link behavior
+    event.preventDefault();
+    // Sign out the user
+    signOut();
+  };
 
-  const handleSignIn = (event) => { // Export the handleSignIn function
-    event.preventDefault(); // Prevent the default event
-    signInWithGoogle(); // Sign in with the GoogleAuthProvider object
-  }; // End of the handleSignIn function
+  // Handle sign-in button click
+  const handleSignIn = (event) => {
+    // Prevent default link behavior
+    event.preventDefault();
+    // Initiate Google sign-in
+    signInWithGoogle();
+  };
 
-  return ( // Return the header
-    <header> 
+  return (
+    <header>
+      {/* App logo and name, link to home page */}
       <Link href="/" className="logo"> 
         <img src="/friendly-eats.svg" alt="FriendlyEats" />
         Friendly Eats
       </Link> 
-      {user ? ( // If the user is authenticated
+      {user ? (
+        // User signed-in, show profile menu
         <> 
           <div className="profile"> 
-            <p> 
+            <p>
+              {/* Display user's profile picture or default image */}
               <img
                 className="profileImage"
                 src={user.photoURL || "/profile.svg"}
                 alt={user.email}
               /> 
+              {/* Display user's display name */}
               {user.displayName}
             </p> 
 
+            {/* Dropdown menu */}
             <div className="menu"> 
               ... 
-              <ul> 
+              <ul>
+                {/* Display user's name in menu */}
                 <li>{user.displayName}</li> 
 
+                {/* Button to add sample restaurants */}
                 <li> 
                   <a href="#" onClick={addFakeRestaurantsAndReviews}> 
                     Add sample restaurants 
                   </a> 
                 </li> 
 
+                {/* Sign out button */}
                 <li> 
                   <a href="#" onClick={handleSignOut}> 
                     Sign Out 
@@ -78,15 +110,16 @@ export default function Header({ initialUser }) { // Export the Header function
               </ul> 
             </div> 
           </div> 
-        </> // End of the handleSignOut function
-      ) : ( //  If the user is not authenticated
+        </>
+      ) : (
+        // User is not signed in, show sign in button
         <div className="profile"> 
           <a href="#" onClick={handleSignIn}> 
             <img src="/profile.svg" alt="A placeholder user image" /> 
             Sign In with Google 
           </a> 
-        </div> // End of the handleSignIn function
+        </div>
       )} 
-    </header> // End of the header
-  ); // End of the header
-} // End of the Header function
+    </header>
+  );
+} 
