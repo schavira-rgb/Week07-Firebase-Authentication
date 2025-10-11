@@ -34,19 +34,91 @@ export async function updateRestaurantImageReference(
   }
 }
 
-// Placeholder function for updating a restaurant's rating (not implemented yet)
+// Function to update a restraurant's rating statistics and add a new review within a transaction
+// Parameters:
+// - transaction: The transaction object
+// - docRef: The reference to the restaurant document
+// - newRatingDocument: The reference to the new rating document
+// - review: The new review data
 const updateWithRating = async (
   transaction,
   docRef,
   newRatingDocument,
   review
 ) => {
-  return;
+  // Retrieve the current restaurant document from the Firestore within the transaction
+  const restaurant = await transaction.get(docRef);
+  
+  // Extract the document from the restaurant data 
+  const data = restaurant.data();
+
+  // Calculate the new total number of ratings
+  // If newNumRatings exist, increment it by 1; otherwise, this is the first rating (set to 1)
+  const newNumRatings = data?.numRatings ? data.numRatings + 1 : 1;
+
+  // Calculate the new sum of all ratings
+  // Add the current review's rating to existing sum (or 0 if no ratings exist)
+  const newSumRating = (data?.sumRating || 0) + Number(review.rating);
+  
+  // Calculate the new average rating by dividing total sum by total number of ratings
+  const newAverage = newSumRating / newNumRatings;
+
+  // Update the restaurant document with the new rating statistics
+  transaction.update(docRef, {
+    numRatings: newNumRatings,     //Updated total number of ratings
+    sumRating: newSumRating,       //Updated sum of all rating values
+    avgRating: newAverage,         //Updated average rating
+  });
+
+  // Create a new review document in the reviews subcollection
+  transaction.set(newRatingDocument, {
+    ...review,  // Spread operator to include all review data (rating, text, userId, userName)
+    timestamp: Timestamp.fromDate(new Date()), // Add current timestamp to the review
+  });
 };
 
-// Placeholder function for adding a review to a restaurant (not implemented yet)
+// Exported async function to add a review to a restaurant and update its rating statistics
+// Parameters:
+// - db: The Firestore database instance
+// - restaurantId: The ID of the restaurant being reviewed
+// - review: Object containing review data (rating, text, userId, userName)
 export async function addReviewToRestaurant(db, restaurantId, review) {
-  return;
+  // Validate that restaurantId is provided
+  if (!restaurantId) {
+          throw new Error("No restaurant ID has been provided.");
+  }
+
+  
+  if (!review) {
+          throw new Error("A valid review has not been provided.");
+  }
+
+  // Try-catch block to handle any errors during the review submission process
+  try {
+          // Create a reference to the specific restaurant document in the "restaurants" collection
+          const docRef = doc(collection(db, "restaurants"), restaurantId);
+          
+          // Create a reference for the new review document in the "ratings" subcollection
+          // Firestore will auto-generate an ID for this document
+          const newRatingDocument = doc(
+                  collection(db, `restaurants/${restaurantId}/ratings`)
+          );
+
+          // Execute a Firestore transaction to automically update both the restaurant and add the review
+          // This ensures both operations succeed or both fail (no partial updates)
+          // The transaction calls updateWithRating function to perform the updates
+          await runTransaction(db, transaction =>
+                  updateWithRating(transaction, docRef, newRatingDocument, review)
+          );
+  } catch (error) {
+          // Log the error to the console for debugging purposes
+          console.error(
+                  "There was an error adding the rating to the restaurant",
+                  error
+          );
+          // Re-throw the error so calling code can handle it
+          throw error;
+  }
 }
 
 // Apply filtering and sorting to a firestore query
