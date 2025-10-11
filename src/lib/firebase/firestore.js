@@ -88,7 +88,7 @@ export async function addReviewToRestaurant(db, restaurantId, review) {
           throw new Error("No restaurant ID has been provided.");
   }
 
-  
+  // Validate that review data was provided
   if (!review) {
           throw new Error("A valid review has not been provided.");
   }
